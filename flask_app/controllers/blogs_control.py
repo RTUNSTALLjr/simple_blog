@@ -1,4 +1,4 @@
-from flask import render_template, redirect, request, session, url_for
+from flask import render_template, redirect, request, session, url_for, flash
 from flask_app import app
 from flask_app.models import formz
 # from flask_app.controllers import review_control
@@ -26,9 +26,12 @@ def home():
 def about():
     return render_template("about.html", title = 'About')
 
-@app.route("/register")
+@app.route("/register", methods=['GET', 'POST'])
 def register():
-    form = formz.RegistrationForm()
+    form = formz.RegistrationForm(request.form)
+    if form.validate_on_submit():
+        flash(f'Account created for {form.username.data}!', 'success')
+        return redirect(url_for('home'))
     return render_template("register.html", title = "Register", form = form )
 
 @app.route("/login")
