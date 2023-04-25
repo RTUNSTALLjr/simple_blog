@@ -1,6 +1,6 @@
 from flask import render_template, redirect, request, session, url_for, flash
-from flask_app import app
-from flask_app.models import formz
+from flask_app import app, db, bcrypt
+from flask_app.models import formz, model
 # from flask_app.controllers import review_control
 
 posts = [
@@ -31,11 +31,12 @@ def register():
     form = formz.RegistrationForm()
     print(form)
     if form.validate_on_submit():
-        print(form.password.data)
-        form.password.data = "banana"
-        print(form.password.data)
+        hashed_password = bcrypt.generate_password_hash(form.password.data)
+        user = model.User(username=form.username.data, email=form.email.data, password=hashed_password)
+        db.session.add(user)
+        db.session.commit()
         flash(f'Account created for {form.username.data}!', 'success')
-        return redirect(url_for('home'))
+        return redirect(url_for('login'))
     return render_template("register.html", title = "Register", form = form )
 
 @app.route("/login", methods=["GET", "POST"])
